@@ -2,8 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#e8590c">
 <title>✈ Travel Expense</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -18,7 +19,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--font-jp);font-size:16px;overflow:hidden}
-.hdr{background:linear-gradient(135deg,#c94808 0%,var(--org) 40%,var(--org2) 80%,#ffaa6a 100%);color:#fff;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 20px rgba(200,70,0,.35);position:relative;overflow:hidden}
+.hdr{background:linear-gradient(135deg,#c94808 0%,var(--org) 40%,var(--org2) 80%,#ffaa6a 100%);color:#fff;padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 20px rgba(200,70,0,.35);position:relative;overflow:hidden}
 .hdr::after{content:'✈';position:absolute;right:-8px;top:-12px;font-size:5.5rem;opacity:.07;transform:rotate(20deg);pointer-events:none}
 .hdr-l{display:flex;flex-direction:column}
 .hdr-title{font-family:var(--font-en);font-size:1.4rem;font-weight:900;letter-spacing:-.03em;line-height:1}
@@ -122,6 +123,16 @@ tr:nth-child(even) td{background:var(--org4)}
 .chip-del:hover{color:var(--red)}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--org5);border-radius:3px}
+
+  /* ── ツールバー ── */
+  .tv-toolbar{padding:1rem 1rem 2rem;border-top:1px solid rgba(255,255,255,.12);margin-top:.8rem;display:flex;flex-direction:column;gap:.55rem;}
+  .tv-btn-row{display:flex;gap:.45rem;}
+  .tv-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.7rem .9rem;border-radius:10px;font-family:inherit;font-size:.87rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:all .15s;width:100%;}
+  .tv-btn-ss{background:linear-gradient(135deg,#e8590c,#c44008);color:#fff;box-shadow:0 2px 12px rgba(232,89,12,.4);}
+  .tv-btn-csv{background:linear-gradient(135deg,#2e7d4e,#1a5c36);color:#fff;box-shadow:0 2px 10px rgba(46,125,78,.35);}
+  .tv-btn-exp{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);flex:1;font-size:.82rem;padding:.6rem .5rem;}
+  .tv-btn-imp{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1.5px dashed rgba(255,255,255,.28);flex:1;font-size:.82rem;padding:.6rem .5rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:.35rem;}
+  .tv-note{font-size:.71rem;color:rgba(255,255,255,.45);text-align:center;margin-top:-.1rem;}
 </style>
 </head>
 <body>
@@ -212,6 +223,26 @@ tr:nth-child(even) td{background:var(--org4)}
       <button class="add-btn" onclick="openTripModal()">＋ 追加</button>
     </div>
     <div id="trip-list"></div>
+
+    <div class="tv-toolbar">
+      <!-- SSを開く -->
+      <a class="tv-btn tv-btn-ss" href="https://docs.google.com/spreadsheets/d/1g3ZCbcFSylflDdMTGC99D7jN-WuyHO-IazsKQTFtyLc/edit" target="_blank" rel="noopener">
+        <span>🗂️</span><span>スプレッドシートを開く</span>
+      </a>
+      <!-- SS出力（CSV） -->
+      <button class="tv-btn tv-btn-csv" onclick="exportSSData()">
+        <span>📊</span><span>スプレッドシート出力（CSV）</span>
+      </button>
+      <!-- 候補同期 -->
+      <div class="tv-btn-row">
+        <button class="tv-btn tv-btn-exp" onclick="exportTravelPrefs()">📤 候補エクスポート</button>
+        <label class="tv-btn tv-btn-imp">
+          📥 候補インポート
+          <input type="file" accept=".json" style="display:none" onchange="importTravelPrefs(this)">
+        </label>
+      </div>
+      <p class="tv-note">MacとiPhoneの候補（サブカテゴリ・決済）を同期できます</p>
+    </div>
   </div>
 
 </div>
@@ -285,8 +316,12 @@ async function loadAllFromGAS(silent=false) {
     ]);
     _entries=[];
     (dR.rows||[]).slice(1).forEach(r=>{
-      if(!r[0]||r[0]==='ID')return;
-      _entries.push({id:String(r[0]),trip:String(r[1]||''),date:String(r[2]||''),cat:String(r[3]||''),subcat:String(r[4]||''),payer:String(r[5]||''),payMethod:String(r[6]||''),payDetail:String(r[7]||''),amount:parseFloat(r[8])||0,memo:String(r[9]||'')});
+      if(r[0]==='ID')return;
+      const dv=r[2]; if(!dv)return;
+      const ds=dv instanceof Date?dv.toISOString().slice(0,10):String(dv).slice(0,10);
+      if(!ds||ds.length<8)return;
+      const eid=r[0]?String(r[0]):`ss_${ds}_${r[8]}_${r[3]}`;
+      _entries.push({id:eid,trip:String(r[1]||''),date:ds,cat:String(r[3]||''),subcat:String(r[4]||''),payer:String(r[5]||''),payMethod:String(r[6]||''),payDetail:String(r[7]||''),amount:parseFloat(r[8])||0,memo:String(r[9]||'')});
     });
     _trips=[];
     (tR.rows||[]).slice(1).forEach(r=>{if(!r[0])return;_trips.push({id:String(r[0]),name:String(r[1]||''),start:String(r[2]||''),end:String(r[3]||''),memo:String(r[4]||'')});});
@@ -360,17 +395,28 @@ function saveTrip(){
   const editId=document.getElementById('tm-edit-id').value;
   if(!name){showToast('旅行名を入力してください');return;}
   if(editId){
-    // 編集
     const idx=_trips.findIndex(t=>t.id===editId);
+    const oldName=idx>=0?_trips[idx].name:'';
     if(idx>=0) _trips[idx]={id:editId,name,start,end,memo};
-    if(_curTrip===_trips[idx]?.name||_curTrip===name) _curTrip=name;
+    if(oldName && oldName!==name){
+      // 支出明細の旅行名を更新
+      _entries.forEach(e=>{if(e.trip===oldName)e.trip=name;});
+      // 按分データのキーを更新
+      if(_allocs[oldName]!==undefined){_allocs[name]=_allocs[oldName];delete _allocs[oldName];}
+      if(_curTrip===oldName) _curTrip=name;
+      // GAS dataシートの旅行名列も一括更新
+      gasPost({action:'rename_trip',oldName,newName:name});
+      gasPost({action:'save_allocs',rows:[['旅行名','大','洋子','公費'],...Object.entries(_allocs).map(([n,v])=>[n,v['大'],v['洋子'],v['公費']])]});
+      showToast('✓ 旅行名と関連データを更新しました','success');
+    } else {
+      showToast('✓ 旅行を更新しました','success');
+    }
   } else {
-    // 新規
     _trips.push({id:String(Date.now()),name,start,end,memo});
+    showToast('✓ 旅行を追加しました','success');
   }
   gasPost({action:'save_trips',rows:[['ID','旅行名','開始日','終了日','メモ'],..._trips.map(t=>[t.id,t.name,t.start,t.end,t.memo])]});
   renderTripSels();renderTripList();closeTripMo();
-  showToast(editId?'✓ 旅行を更新しました':'✓ 旅行を追加しました','success');
 }
 
 function initForm(){
@@ -557,6 +603,65 @@ function fmt(n){return Math.round(n).toLocaleString();}
 function jstDate(){const d=new Date();return new Date(d.getTime()+9*3600000).toISOString().slice(0,10);}
 function getChips(key,defs=[]){const s=localStorage.getItem('tb2_'+key);if(s!==null){try{return JSON.parse(s);}catch{}}return defs;}
 function setChips(key,chips){localStorage.setItem('tb2_'+key,JSON.stringify(chips));}
+
+// ── 候補エクスポート ──
+function exportTravelPrefs(){
+  const keys=[...CATS.map(c=>c.key),'カード','QR'];
+  const data={};
+  keys.forEach(k=>{const v=localStorage.getItem('tb2_'+k);if(v!==null)data['tb2_'+k]=v;});
+  data._exported=new Date().toISOString();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`tabikake_prefs_${jstDate()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('候補設定をエクスポートしました','success');
+}
+
+// ── 候補インポート ──
+function importTravelPrefs(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!confirm('現在の候補設定を上書きしますか？\nエクスポート日時: '+(data._exported||'不明')))return;
+      Object.entries(data).forEach(([k,v])=>{if(k.startsWith('tb2_'))localStorage.setItem(k,v);});
+      if(_selCat){const cat=CATS.find(c=>c.key===_selCat);renderSubChips(_selCat,cat?.subs||[]);}
+      showToast('候補設定をインポートしました','success');
+    }catch{showToast('読み込みに失敗しました','error');}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ── スプレッドシート出力（CSV一括） ──
+function exportSSData(){
+  if(!_entries.length){showToast('データがありません','error');return;}
+  const BOM='﻿';
+  const esc=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
+  // dataシート
+  const dataRows=[['ID','旅行名','日付','カテゴリ','サブカテゴリ','支払者','決済種別','決済詳細','金額','メモ']];
+  [..._entries].sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
+    dataRows.push([e.id,e.trip,e.date,e.cat,e.subcat,e.payer,e.payMethod,e.payDetail,e.amount,e.memo]);
+  });
+  const dataCsv=BOM+dataRows.map(r=>r.map(esc).join(',')).join('\n');
+  dl(dataCsv,`tabikake_data_${jstDate()}.csv`);
+
+  // tripsシート
+  const tripRows=[['ID','旅行名','開始日','終了日','メモ'],..._trips.map(t=>[t.id,t.name,t.start,t.end,t.memo])];
+  const tripCsv=BOM+tripRows.map(r=>r.map(esc).join(',')).join('\n');
+  dl(tripCsv,`tabikake_trips_${jstDate()}.csv`);
+
+  showToast('CSVを2ファイルエクスポートしました','success');
+}
+function dl(csv,fname){
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=fname;a.click();
+  URL.revokeObjectURL(url);
+}
 function goPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
