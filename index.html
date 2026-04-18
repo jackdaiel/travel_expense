@@ -9,32 +9,41 @@
 <link rel="apple-touch-icon" href="travel_expense.png">
 <link rel="icon" type="image/png" href="travel_expense.png">
 <title>✈ Travel Expense</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --org:#e8590c;--org2:#ff7c38;--org4:#fff3ec;--org5:#ffdcc8;
   --dark:#1c0e04;--ink:#2d1a08;--muted:#8c6a50;
   --border:#f0d4c0;--paper:#fffaf7;--white:#fff;
   --red:#d63030;--green:#2e7d5e;--blue:#1a6fa8;
-  --font-en:'Outfit',sans-serif;--font-jp:'Noto Sans JP',sans-serif;
+  --font-en:'Outfit',sans-serif;--font-jp:'Noto Sans JP',sans-serif;--font-title:'Bebas Neue','Outfit',sans-serif;
   --r:14px;--sh:0 2px 16px rgba(232,89,12,.1);--sh2:0 6px 32px rgba(232,89,12,.18);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--font-jp);font-size:16px;overflow:hidden}
-.hdr{background:linear-gradient(135deg,#c94808 0%,var(--org) 40%,var(--org2) 80%,#ffaa6a 100%);color:#fff;padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 20px rgba(200,70,0,.35);position:relative;overflow:hidden}
-.hdr::after{content:'✈';position:absolute;right:-8px;top:-12px;font-size:5.5rem;opacity:.07;transform:rotate(20deg);pointer-events:none}
-.hdr-l{display:flex;flex-direction:column}
-.hdr-title{font-family:var(--font-en);font-size:1.4rem;font-weight:900;letter-spacing:-.03em;line-height:1}
-.hdr-r{display:flex;align-items:center;gap:.45rem}
-.trip-sel{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:20px;padding:.3rem .8rem;font-size:.82rem;font-family:var(--font-jp);cursor:pointer;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trip-sel option{color:var(--ink);background:#fff}
+.hdr{background:#e8590c;color:#fff;padding:calc(.7rem + env(safe-area-inset-top)) 1rem .7rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 24px rgba(180,60,0,.4);position:relative;overflow:hidden;cursor:pointer;}
+.hdr-deco{position:absolute;right:-4px;top:50%;transform:translateY(-50%);opacity:.12;pointer-events:none;line-height:1;}
+.hdr-deco svg{width:72px;height:72px;fill:#fff;}
+.hdr-l{display:flex;flex-direction:column;gap:.05rem;z-index:1;}
+.hdr-title{font-family:var(--font-title);font-size:1.85rem;font-weight:400;letter-spacing:.08em;line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.2);}
+.hdr-sub{font-family:var(--font-en);font-size:.65rem;font-weight:500;letter-spacing:.22em;color:rgba(255,255,255,.7);text-transform:uppercase;}
+.hdr-r{display:flex;align-items:center;gap:.45rem;z-index:1;}
+/* 旅行選択バー（ヘッダー直下） */
+.trip-bar{background:linear-gradient(90deg,#1c0e04 0%,#2d1808 100%);padding:.55rem 1rem;display:flex;align-items:center;gap:.6rem;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+.trip-bar-label{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
+.trip-bar-sel{flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,120,40,.5);color:#fff;border-radius:8px;padding:.42rem .75rem;font-size:.9rem;font-family:var(--font-jp);cursor:pointer;font-weight:500;-webkit-appearance:none;appearance:none;text-overflow:ellipsis;transition:border-color .2s,box-shadow .2s;}
+.trip-bar-sel.unset{border-color:rgba(255,180,80,.9);animation:pulse-border 1.8s ease-in-out infinite;}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(255,140,40,.4);}50%{box-shadow:0 0 0 4px rgba(255,140,40,.15);}}
+.trip-bar-sel:focus{outline:none;border-color:var(--org);box-shadow:0 0 0 3px rgba(232,89,12,.25);}
+.trip-bar-sel option{color:var(--ink);background:#fff;}
+.trip-bar-arrow{color:rgba(255,120,40,.7);font-size:.8rem;pointer-events:none;flex-shrink:0;}
 .icon-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;flex-shrink:0}
 .nav{display:flex;background:#fff;border-top:1px solid var(--border);position:fixed;bottom:0;left:0;right:0;z-index:100;box-shadow:0 -3px 16px rgba(0,0,0,.06)}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:.45rem .2rem .35rem;cursor:pointer;transition:color .18s;color:var(--muted);font-size:.72rem;gap:.18rem;border:none;background:none}
 .nb .ni{font-size:1.25rem;transition:transform .18s}
 .nb.on{color:var(--org)}
 .nb.on .ni{transform:scale(1.12)}
-.pages{height:calc(100vh - 52px - 60px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pages{height:calc(100vh - 52px - 44px - 60px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .page{display:none;padding:.9rem}
 .page.on{display:block}
 .stitle{font-family:var(--font-en);font-size:1.1rem;font-weight:700;color:var(--org);margin-bottom:.75rem;display:flex;align-items:center;gap:.35rem}
@@ -139,16 +148,26 @@ tr:nth-child(even) td{background:var(--org4)}
 </head>
 <body>
 
-<div class="hdr">
+<div class="hdr" onclick="goPage('entry',document.getElementById('nb-entry'))">
   <div class="hdr-l">
-    <div class="hdr-title">✈ Travel Expense</div>
+    <div class="hdr-title">TRAVEL EXPENSE</div>
+    <div class="hdr-sub">Trip Budget Tracker</div>
   </div>
-  <div class="hdr-r">
-    <select class="trip-sel" id="hdr-trip-sel" onchange="onTripChange(this.value)">
-      <option value="">旅行を選択</option>
-    </select>
+  <div class="hdr-r" onclick="event.stopPropagation()">
     <button class="icon-btn" onclick="loadAllFromGAS()">🔄</button>
   </div>
+  <!-- 飛行機SVGデコレーション -->
+  <div class="hdr-deco">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 50 L55 15 L65 20 L45 50 L65 80 L55 85 Z M45 50 L90 38 L90 62 Z M20 62 L35 56 L35 70 Z"/>
+    </svg>
+  </div>
+</div>
+<!-- 旅行選択バー -->
+<div class="trip-bar">
+  <select class="trip-bar-sel" id="hdr-trip-sel" onchange="onTripChange(this.value)">
+    <option value="">旅行を選択してください</option>
+  </select>
 </div>
 
 <div class="pages">
@@ -250,7 +269,7 @@ tr:nth-child(even) td{background:var(--org4)}
 </div>
 
 <nav class="nav">
-  <button class="nb on" onclick="goPage('entry',this)"><span class="ni">💴</span>記録</button>
+  <button class="nb on" id="nb-entry" onclick="goPage('entry',this)"><span class="ni">💴</span>記録</button>
   <button class="nb" onclick="goPage('summary',this)"><span class="ni">📊</span>集計</button>
   <button class="nb" onclick="goPage('history',this)"><span class="ni">📋</span>履歴</button>
   <button class="nb" onclick="goPage('trips',this)"><span class="ni">🗺</span>旅行</button>
@@ -338,6 +357,9 @@ function renderAll(){renderTripSels();renderTripList();renderSummary();renderHis
 
 function renderTripSels(){
   const opts=_trips.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+  // 未選択時はパルスアニメーション
+  const selEl=document.getElementById('hdr-trip-sel');
+  if(selEl){if(!_curTrip)selEl.classList.add('unset');else selEl.classList.remove('unset');}
   const el=document.getElementById('hdr-trip-sel');
   el.innerHTML='<option value="">旅行を選択</option>'+opts;
   if(_curTrip) el.value=_curTrip;
