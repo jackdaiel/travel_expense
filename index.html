@@ -43,7 +43,7 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(-
 .nb .ni{font-size:1.25rem;transition:transform .18s}
 .nb.on{color:var(--org)}
 .nb.on .ni{transform:scale(1.12)}
-.pages{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.pages{position:fixed;top:calc(52px + 44px);bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:1.5rem}
 .page{display:none;padding:.9rem}
 .page.on{display:block}
 .stitle{font-family:var(--font-en);font-size:1.1rem;font-weight:700;color:var(--org);margin-bottom:.75rem;display:flex;align-items:center;gap:.35rem}
